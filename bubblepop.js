@@ -3,10 +3,10 @@ const context = canvas.getContext("2d");
 const bubblePoints = 50;
 const startTime = Math.round((new Date()).getTime() / 1000);
 const expansionContraction = .20;
-var spawnRate = 1;
-var score = 0;
-var bubbles = [];
-var spawnNumber = 1;
+let spawnRate = 1;
+let score = 0;
+let bubbles = [];
+let spawnNumber = 1;
 
 // Is the point within the circle?
 function doesIntersect(point, circle) {
@@ -50,12 +50,12 @@ function drawCircle(x, y, radius, color) {
   context.closePath();
 }
 
-// returns an integer between min (included) and max (included)
+// Returns an integer between min (inclusive) and max (inclusive)
 function randomInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// returns a random color
+// Returns a random color
 function randomColor() {
   return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
 }
@@ -67,7 +67,7 @@ function spawnBubbles() {
   }
 
   if (bubbles.length < spawnNumber) {
-    for (var i = spawnNumber; i >= 0; i--) {
+    for (let i = spawnNumber; i >= 0; i--) {
       const radius = randomInteger(5, 50);
       const x = randomInteger(10, canvas.width);
       const y = randomInteger(30, canvas.height);
@@ -87,15 +87,27 @@ function spawnBubbles() {
       score -= 10;
       bubbles.splice(index, 1);
     } else {
+      const coinFlip = randomInteger(0, 1);
+      let bubbleX = bubble.x;
+      let bubbleY = bubble.y;
+
+      if (coinFlip === 0) {
+        bubbleX++;
+        bubbleY++;
+      } else {
+        bubbleX--;
+        bubbleY--;
+      }
+      
       if (bubble.radius < 50 && bubble.ascending === true) {
-        bubbles[index] = {x: bubble.x,
-                          y: bubble.y,
+        bubbles[index] = {x: bubbleX,
+                          y: bubbleY,
                           radius: bubble.radius + expansionContraction,
                           ascending: true,
                           color: bubble.color};
       } else {
-        bubbles[index] = {x: bubble.x,
-                          y: bubble.y,
+        bubbles[index] = {x: bubbleX,
+                          y: bubbleY,
                           radius: bubble.radius - expansionContraction,
                           ascending: false,
                           color: bubble.color};
@@ -114,6 +126,7 @@ function draw() {
   if (score >= 0) {
     requestAnimationFrame(draw);
   } else {
+    score = 0;
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';
     context.fillText('Game Over...', canvas.width / 2 - 175, canvas.height / 2);

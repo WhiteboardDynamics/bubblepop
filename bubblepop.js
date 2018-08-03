@@ -8,6 +8,7 @@ let spawnRate = 1;
 let score = 0;
 let bubbles = [];
 let spawnNumber = 1;
+let gameOver = false;
 
 // Is the point within the circle?
 function doesIntersect(point, circle) {
@@ -86,37 +87,16 @@ function randomDirection() {
   }
 }
 
-// Returns the opposite of the given direction
-function reverseDirection(direction) {
-  switch (direction) {
-    case 'n':
-      return 's';
-    case 's':
-      return 'n';
-    case 'e':
-      return 'w';
-    case 'w':
-      return 'e';
-    case 'ne':
-      return 'se';
-    case 'nw':
-      return 'sw';
-    case 'se':
-      return 'ne';
-    case 'sw':
-      return 'nw';
-    default:
-      return direction
-  }
-}
-
 // Checks if a bubble is at the edge and reverses its direction if it is
 function edgeCheck(x, y, radius, direction) {
-  if (x + bubbleVelocity >= canvas.width - radius 
-    || x + bubbleVelocity <= radius 
-    || y + bubbleVelocity >= canvas.height - radius
-    || y + bubbleVelocity <= radius) {
-    return reverseDirection(direction);
+  if (x + bubbleVelocity >= canvas.width - radius) {
+    return 'w';
+  } else if (x + bubbleVelocity <= radius ) {
+    return 'e';
+  } else if (y + bubbleVelocity >= canvas.height - radius) {
+    return 's';
+  } else if (y + bubbleVelocity <= radius) {
+    return 'n';
   } else {
     return direction;
   }
@@ -215,9 +195,10 @@ function draw() {
   drawScore();
   spawnBubbles();
 
-  if (score >= 0) {
+  if (score >= 0 && gameOver === false) {
     requestAnimationFrame(draw);
   } else {
+    gameOver = true;
     score = 0;
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';

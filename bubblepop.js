@@ -8,16 +8,22 @@ var score = 0;
 var bubbles = [];
 var spawnNumber = 1;
 
+// Is the point within the circle?
 function doesIntersect(point, circle) {
+  // Check whether the distance from the center of the circle to the
+  // point is less than the circle's radius.
   return Math.sqrt((point.x - circle.x) ** 2 + (point.y - circle.y) ** 2) < circle.radius;
 }
 
+// Event listener for click events
 function clickHandler(event) {
+  // Get the position of the click event
   const position = {
     x: event.clientX,
     y: event.clientY
   };
 
+  // Check if the click event is over any of the bubbles
   bubbles.forEach(function(bubble, index, bubbles) {
     if (doesIntersect(position, bubbles[index])) {
       score += 10;
@@ -26,6 +32,7 @@ function clickHandler(event) {
   });
 }
 
+// Draws the current score
 function drawScore() {
   context.font = '3vw Helvetica';
   context.fillStyle = '#000000';
@@ -43,6 +50,16 @@ function drawCircle(x, y, radius, color) {
   context.closePath();
 }
 
+// returns an integer between min (included) and max (included)
+function randomInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// returns a random color
+function randomColor() {
+  return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+}
+
 function spawnBubbles() {
   if (Math.round((new Date()).getTime() / 1000) > startTime + spawnRate) {
     spawnNumber += .35;
@@ -51,11 +68,15 @@ function spawnBubbles() {
 
   if (bubbles.length < spawnNumber) {
     for (var i = spawnNumber; i >= 0; i--) {
-      const x = Math.floor(Math.random() * (canvas.width - 10 +1 )) + 10;
-      const y = Math.floor(Math.random() * (canvas.height - 30 + 1)) + 30;
-      const r = Math.floor(Math.random() * (50 - 5 + 1)) + 5;
-      const c = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
-      bubbles.push({x: x, y: y, radius: r, ascending: true, color: c});
+      const radius = randomInteger(5, 50);
+      const x = randomInteger(10, canvas.width);
+      const y = randomInteger(30, canvas.height);
+      const c = randomColor();
+      bubbles.push({x: x,
+                    y: y,
+                    radius: radius,
+                    ascending: true,
+                    color: c});
     }
   }
 
@@ -67,11 +88,17 @@ function spawnBubbles() {
       bubbles.splice(index, 1);
     } else {
       if (bubble.radius < 50 && bubble.ascending === true) {
-        bubbles[index] = {x: bubble.x, y: bubble.y, 
-          radius: bubble.radius + expansionContraction, ascending: true, color: bubble.color};
+        bubbles[index] = {x: bubble.x,
+                          y: bubble.y,
+                          radius: bubble.radius + expansionContraction,
+                          ascending: true,
+                          color: bubble.color};
       } else {
-        bubbles[index] = {x: bubble.x, y: bubble.y, 
-          radius: bubble.radius - expansionContraction, ascending: false, color: bubble.color}; 
+        bubbles[index] = {x: bubble.x,
+                          y: bubble.y,
+                          radius: bubble.radius - expansionContraction,
+                          ascending: false,
+                          color: bubble.color};
       }
     }
   });
@@ -93,6 +120,7 @@ function draw() {
   }
 }
 
+// Add event listeners to the window
 window.addEventListener('click', clickHandler, false);
 window.addEventListener('load', draw(), false);
 window.addEventListener('resize', draw(), false);

@@ -62,69 +62,62 @@ function randomColor() {
   return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
 }
 
-// Returns a random direction
-function randomDirection() {
-  const seed = randomInteger(0, 7);
-  switch (seed) {
-    case 0:
-      return 'n';
-    case 1:
-      return 's';
-    case 2:
-      return 'e';
-    case 3:
-      return 'w';
-    case 4:
-      return 'ne';
-    case 5:
-      return 'nw';
-    case 6:
-      return 'se';
-    case 7:
-      return 'sw';
-    default:
-      return 'n';
-  }
+// Returns a random angle between -Pi and Pi
+function randomAngle() {
+  return Math.random() * 2 * Math.PI - Math.PI;
 }
 
-// Checks if a bubble is at the edge and reverses its direction if it is
-function edgeCheck(x, y, radius, direction) {
-  if (x + bubbleVelocity >= canvas.width - radius) {
-    return 'w';
-  } else if (x + bubbleVelocity <= radius ) {
-    return 'e';
-  } else if (y + bubbleVelocity >= canvas.height - radius) {
-    return 's';
-  } else if (y + bubbleVelocity <= radius) {
-    return 'n';
-  } else {
-    return direction;
-  }
-}
-
-// Creates more bubbles if necessary and modifies their position
+// Creates more bubbles if necessary
 function spawnBubbles() {
   if (Math.round((new Date()).getTime() / 1000) > startTime + spawnRate) {
     spawnNumber += .35;
     spawnRate += 2;
   }
 
-  if (bubbles.length < spawnNumber) {
-    for (let i = spawnNumber; i >= 0; i--) {
-      const radius = randomInteger(5, 50);
-      const x = randomInteger(10, canvas.width);
-      const y = randomInteger(30, canvas.height);
-      const c = randomColor();
-      const d = randomDirection();
-      bubbles.push({x: x,
-                    y: y,
-                    radius: radius,
-                    ascending: true,
-                    color: c,
-                    direction: d});
-    }
+  for (let i = spawnNumber - bubbles.length; i > 0; i--) {
+    const radius = randomInteger(5, 50);
+    const x = randomInteger(50, canvas.width - 50);
+    const y = randomInteger(50, canvas.height - 50);
+    const color = randomColor();
+    const angle = randomAngle();
+    bubbles.push({x: x,
+                  y: y,
+                  radius: radius,
+                  ascending: true,
+                  color: color,
+                  angle: angle});
   }
+}
 
+// Check if bubble collides with either vertical edge of playfield
+function collideVerticalWall(bubble) {
+  const bubbleLeftEdge = bubble.x - bubble.radius;
+  const bubbleRightEdge = bubble.x + bubble.radius;
+  return (bubbleLeftEdge < 0) || (bubbleRightEdge > canvas.width);
+}
+
+// Check if bubble collides with either horizontal edge of playfield
+function collideHorizontalWall(bubble) {
+  const bubbleTopEdge = bubble.y - bubble.radius;
+  const bubbleBottomEdge = bubble.y + bubble.radius;
+  return (bubbleTopEdge < 0) || (bubbleBottomEdge > canvas.height);
+}
+
+// Flip angle on collison with vertical wall
+function flipAngleVertical(bubble) {
+  if (bubble.angle < 0)
+    return -Math.PI - bubble.angle;
+  else
+    return Math.PI - bubble.angle;
+}
+
+// Flip angle on collison with horizontal wall
+function flipAngleHorizontal(bubble) {
+  return -bubble.angle;
+}
+
+// Update bubbles positions and angles
+function updateBubbles() {
   bubbles.forEach(function(bubble, index, bubbles) {
     const negativeCheck = drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
 
@@ -132,57 +125,28 @@ function spawnBubbles() {
       score -= 10;
       bubbles.splice(index, 1);
     } else {
-      let bubbleX = bubble.x;
-      let bubbleY = bubble.y;
-
-      const direction = edgeCheck(bubble.x, bubble.y, bubble.radius, bubble.direction);
-
-      switch (direction) {
-        case 'n':
-          bubbleY += bubbleVelocity;
-          break;
-        case 's':
-          bubbleY -= bubbleVelocity;
-          break;
-        case 'e':
-          bubbleX += bubbleVelocity;
-          break;
-        case 'w':
-          bubbleX -= bubbleVelocity;
-          break;
-        case 'ne':
-          bubbleX += bubbleVelocity;
-          bubbleY += bubbleVelocity;
-          break;
-        case 'nw':
-          bubbleX -= bubbleVelocity;
-          bubbleY += bubbleVelocity;
-          break;
-        case 'se':
-          bubbleX += bubbleVelocity;
-          bubbleY -= bubbleVelocity;
-          break;
-        case 'sw':
-          bubbleX -= bubbleVelocity;
-          bubbleY -= bubbleVelocity;
-          break;
-      }
-
       if (bubble.radius < 50 && bubble.ascending === true) {
-        bubbles[index] = {x: bubbleX,
-                          y: bubbleY,
-                          radius: bubble.radius + expansionContraction,
-                          ascending: true,
-                          color: bubble.color,
-                          direction: direction};
-      } else {
-        bubbles[index] = {x: bubbleX,
-                          y: bubbleY,
-                          radius: bubble.radius - expansionContraction,
-                          ascending: false,
-                          color: bubble.color,
-                          direction: direction};
+        bubble.radius += expansionContraction;
       }
+      else {
+        bubble.radius -= expansionContraction;
+        bubble.ascending = false;
+      }
+
+      const bubbleAngle = bubble.angle;
+      const movementX = Math.cos(bubbleAngle) * bubbleVelocity;
+      const movementY = -Math.sin(bubbleAngle) * bubbleVelocity;
+
+      bubble.x += movementX;
+      bubble.y += movementY;
+
+      if (collideVerticalWall(bubble)) {
+        bubble.angle = flipAngleVertical(bubble);
+      } else if (collideHorizontalWall(bubble)) {
+        bubble.angle = flipAngleHorizontal(bubble);
+      }
+
+      bubbles[index] = bubble;
     }
   });
 }
@@ -194,6 +158,7 @@ function draw() {
 
   drawScore();
   spawnBubbles();
+  updateBubbles();
 
   if (score >= 0 && gameOver === false) {
     requestAnimationFrame(draw);

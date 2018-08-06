@@ -6,9 +6,16 @@ const expansionContraction = .20;
 const bubbleVelocity = .25;
 let spawnRate = 1;
 let score = 0;
+let time = 120;
 let bubbles = [];
 let spawnNumber = 1;
 let gameOver = false;
+
+window.onload = function() {
+  setInterval(function() {
+    time--;
+  }, 1000);
+}
 
 // Is the point within the circle?
 function doesIntersect(point, circle) {
@@ -39,6 +46,13 @@ function drawScore() {
   context.font = '3vw Helvetica';
   context.fillStyle = '#000000';
   context.fillText(`Score: ${score}`, 10, 30);
+}
+
+// Draws the remaining time
+function drawTime() {
+  context.font = '3vw Helvetica';
+  context.fillStyle = '#000000';
+  context.fillText(`Seconds left: ${time}`, canvas.width - 200, 30);
 }
 
 function drawCircle(x, y, radius, color) {
@@ -122,7 +136,7 @@ function updateBubbles() {
     const negativeCheck = drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
 
     if (negativeCheck === false) {
-      score -= 10;
+      time -= 10;
       bubbles.splice(index, 1);
     } else {
       if (bubble.radius < 50 && bubble.ascending === true) {
@@ -156,15 +170,16 @@ function draw() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
+  drawTime();
   drawScore();
   spawnBubbles();
   updateBubbles();
 
-  if (score >= 0 && gameOver === false) {
+  if (time > 0 && gameOver === false) {
     requestAnimationFrame(draw);
   } else {
     gameOver = true;
-    score = 0;
+    time = 0;
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';
     context.fillText('Game Over...', canvas.width / 2 - 175, canvas.height / 2);

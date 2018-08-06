@@ -4,9 +4,23 @@ const bubblePoints = 50;
 const startTime = Math.round((new Date()).getTime() / 1000);
 const expansionContraction = .20;
 const bubbleVelocity = .25;
+const backButton = {
+  x: canvas.width,
+  y: canvas.height + 450,
+  width: 200,
+  height: 50,
+  text: 'Back to Menu'
+};
+const restartButton = {
+  x: canvas.width,
+  y: canvas.height + 350,
+  width: 200,
+  height: 50,
+  text: 'Play Again?'
+};
 let spawnRate = 1;
 let score = 0;
-let time = 120;
+let time = 10;
 let bubbles = [];
 let spawnNumber = 1;
 let gameOver = false;
@@ -18,10 +32,16 @@ window.onload = function() {
 }
 
 // Is the point within the circle?
-function doesIntersect(point, circle) {
+function intersectCircle(point, circle) {
   // Check whether the distance from the center of the circle to the
   // point is less than the circle's radius.
   return Math.sqrt((point.x - circle.x) ** 2 + (point.y - circle.y) ** 2) < circle.radius;
+}
+
+// Is the point within the rectangle?
+function intersectRectangle(point, rectangle){
+  return rectangle.x <= point.x && point.x <= rectangle.x + rectangle.width &&
+    rectangle.y <= point.y && point.y <= rectangle.y + rectangle.height;
 }
 
 // Event listener for click events
@@ -34,11 +54,18 @@ function clickHandler(event) {
 
   // Check if the click event is over any of the bubbles
   bubbles.forEach(function(bubble, index, bubbles) {
-    if (doesIntersect(position, bubbles[index])) {
+    if (intersectCircle(position, bubbles[index])) {
       score += 10;
       bubbles.splice(index, 1);
     }
   });
+
+  // Check if the click event is over the back button
+  if (intersectRectangle(position, backButton)) {
+    window.location.href = 'index.html';
+  } else if (intersectRectangle(position, restartButton)) {
+    window.location.reload(false); 
+  }
 }
 
 // Draws the current score
@@ -55,6 +82,7 @@ function drawTime() {
   context.fillText(`Seconds left: ${time}`, canvas.width - 200, 30);
 }
 
+// Draws a circle with the given parameters
 function drawCircle(x, y, radius, color) {
   if (radius <= 0) {
     return false;
@@ -64,6 +92,15 @@ function drawCircle(x, y, radius, color) {
   context.fillStyle = color;
   context.fill();
   context.closePath();
+}
+
+function drawRectangle(x, y, width, height, text) {
+  context.beginPath();
+  context.rect(x, y, width, height);
+  context.stroke();
+  context.font = '3vw Helvetica';
+  context.fillStyle = '#000000';
+  context.fillText(text, x + 28, y + 35);
 }
 
 // Returns an integer between min (inclusive) and max (inclusive)
@@ -183,10 +220,14 @@ function draw() {
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';
     context.fillText('Game Over...', canvas.width / 2 - 175, canvas.height / 2);
+    drawRectangle(backButton.x, backButton.y, backButton.width, 
+      backButton.height, backButton.text);
+    drawRectangle(restartButton.x, restartButton.y, restartButton.width,
+      restartButton.height, restartButton.text);
   }
 }
 
 // Add event listeners to the window
-window.addEventListener('click', clickHandler, false);
+canvas.addEventListener('click', clickHandler, false);
 window.addEventListener('load', draw(), false);
-window.addEventListener('resize', draw(), false);
+canvas.addEventListener('resize', draw(), false);

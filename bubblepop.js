@@ -4,16 +4,17 @@ const bubblePoints = 50;
 const startTime = Math.round((new Date()).getTime() / 1000);
 const expansionContraction = .20;
 const bubbleVelocity = .25;
+const scoreKey = 'highScores';
 const backButton = {
   x: canvas.width,
-  y: canvas.height + 450,
+  y: canvas.height + 250,
   width: 200,
   height: 50,
   text: 'Back to Menu'
 };
 const restartButton = {
   x: canvas.width,
-  y: canvas.height + 350,
+  y: canvas.height + 150,
   width: 200,
   height: 50,
   text: 'Play Again?'
@@ -26,6 +27,10 @@ let spawnNumber = 1;
 let gameOver = false;
 
 window.onload = function() {
+  if (localStorage.getItem(scoreKey) === null) {
+    localStorage.setItem(scoreKey, JSON.stringify([]));
+  }
+
   setInterval(function() {
     time--;
   }, 1000);
@@ -202,6 +207,31 @@ function updateBubbles() {
   });
 }
 
+// Checks if the current score is large enough to be a high score
+function checkForHighScore(highScores, score) {
+  highScores.forEach(function(hs) {
+    if (score > hs) {
+      return true;
+    }
+  });
+}
+
+// Draws the high score array
+function drawHighScores(scores) {
+  let yGap = 75;
+  const yOffset = 50;
+  context.font = '4vw Helvetica';
+  context.fillStyle = '#000000';
+  context.fillText('High Scores:', canvas.width / 2 - 100, canvas.height / 2 + yGap);
+  yGap += yOffset;
+  scores.reverse().forEach(function(highScore) {
+    context.font = '3vw Helvetica';
+    context.fillStyle = '#000000';
+    context.fillText(highScore, canvas.width / 2 - 20, canvas.height / 2 + yGap);
+    yGap += yOffset;
+  });
+}
+
 // Redraws the screen each tick
 function draw() {
   canvas.width = window.innerWidth;
@@ -219,11 +249,26 @@ function draw() {
     time = 0;
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';
-    context.fillText('Game Over...', canvas.width / 2 - 175, canvas.height / 2);
+    context.fillText('Game Over...', canvas.width / 2 - 175, canvas.height / 2 - 200);
     drawRectangle(backButton.x, backButton.y, backButton.width, 
       backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
       restartButton.height, restartButton.text);
+
+    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
+    if (localHighScores.length < 5) {
+      localHighScores.push(score);
+      localHighScores = localHighScores.sort((a, b) => a - b);
+      drawHighScores(localHighScores);
+    } else if (checkForHighScore(localHighScores, score)) {
+      localHighScores.push(score);
+      localHighScores = localHighScores.sort((a, b) => a - b);
+      localHighScores.splice(5, 1);
+      drawHighScores(localHighScores);
+    } else {
+      drawHighScores(localHighScores);
+    }
+    localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
   }
 }
 

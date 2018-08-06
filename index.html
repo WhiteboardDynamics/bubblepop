@@ -5,14 +5,26 @@
   <meta name="viewport" content="width=device-width,
     user-scalable=no, initial-scale=1, maximum-scale=1, user-scalable=0" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
-  <div class="jumbotron jumbotron-fluid text-center" style="height: 100vh;">
+  <div class="jumbotron jumbotron-fluid text-center">
     <div class="container-fluid">
       <h1>Bubble Pop!</h1>
       <p class="lead">You have 2 minute to pop the bubbles. If a bubble contracts to nothing then you lose 10 seconds of time. Each bubble is worth 10 points. Good Luck!</p>
       <a class="btn btn-primary btn-lg" href="bubblepop.html" role="button">Play</a>
+      <h2 id="high-score-h2">High Scores:</h2>
+      <div id="high-scores"></div>
     </div>
   </div>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    const highScores = JSON.parse(localStorage.getItem('highScores'));
+
+    highScores.reverse().forEach(function(score) {
+      $('#high-scores').append($(`<li>${score}</br>`));
+    });
+  </script>
 </body>
 </html>

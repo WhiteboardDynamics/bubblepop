@@ -1,0 +1,11 @@
+.jumbotron {
+  height: 100vh;
+}
+
+#high-score-h2 {
+  margin-top: 5px;
+}
+
+li {
+  list-style: none;
+}

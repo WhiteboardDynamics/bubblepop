@@ -21,7 +21,7 @@ const restartButton = {
 };
 let spawnRate = 1;
 let score = 0;
-let time = 10;
+let time = 30;
 let bubbles = [];
 let spawnNumber = 1;
 let gameOver = false;
@@ -66,10 +66,12 @@ function clickHandler(event) {
   });
 
   // Check if the click event is over the back button
-  if (intersectRectangle(position, backButton)) {
-    window.location.href = 'index.html';
-  } else if (intersectRectangle(position, restartButton)) {
-    window.location.reload(false); 
+  if (gameOver === true) {
+    if (intersectRectangle(position, backButton)) {
+      window.location.href = 'index.html';
+    } else if (intersectRectangle(position, restartButton)) {
+      window.location.reload(false); 
+    }
   }
 }
 
@@ -208,12 +210,14 @@ function updateBubbles() {
 }
 
 // Checks if the current score is large enough to be a high score
-function checkForHighScore(highScores, score) {
+function checkForHighScore(highScores, localScore) {
+  let check = false;
   highScores.forEach(function(hs) {
-    if (score > hs) {
-      return true;
+    if (localScore > hs) {
+      check = true;
     }
   });
+  return check;
 }
 
 // Draws the high score array
@@ -224,7 +228,7 @@ function drawHighScores(scores) {
   context.fillStyle = '#000000';
   context.fillText('High Scores:', canvas.width / 2 - 100, canvas.height / 2 + yGap);
   yGap += yOffset;
-  scores.reverse().forEach(function(highScore) {
+  scores.forEach(function(highScore) {
     context.font = '3vw Helvetica';
     context.fillStyle = '#000000';
     context.fillText(highScore, canvas.width / 2 - 20, canvas.height / 2 + yGap);
@@ -263,7 +267,8 @@ function draw() {
     } else if (checkForHighScore(localHighScores, score)) {
       localHighScores.push(score);
       localHighScores = localHighScores.sort((a, b) => a - b);
-      localHighScores.splice(5, 1);
+      localHighScores.reverse();
+      localHighScores.length = 5;
       drawHighScores(localHighScores);
     } else {
       drawHighScores(localHighScores);

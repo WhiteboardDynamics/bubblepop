@@ -21,10 +21,11 @@ const restartButton = {
 };
 let spawnRate = 1;
 let score = 0;
-let time = 30;
+let time = 10;
 let bubbles = [];
 let spawnNumber = 1;
 let gameOver = false;
+let overCount = 0;
 
 window.onload = function() {
   if (localStorage.getItem(scoreKey) === null) {
@@ -250,6 +251,7 @@ function draw() {
     requestAnimationFrame(draw);
   } else {
     gameOver = true;
+    overCount++;
     time = 0;
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';
@@ -260,18 +262,18 @@ function draw() {
       restartButton.height, restartButton.text);
 
     let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
-    if (localHighScores.length < 5) {
+    if (localHighScores.length < 5 && overCount < 2) {
       localHighScores.push(score);
       localHighScores = localHighScores.sort((a, b) => a - b);
-      drawHighScores(localHighScores);
-    } else if (checkForHighScore(localHighScores, score)) {
+      drawHighScores(localHighScores.reverse());
+    } else if (checkForHighScore(localHighScores, score) && overCount < 2) {
       localHighScores.push(score);
       localHighScores = localHighScores.sort((a, b) => a - b);
       localHighScores.reverse();
       localHighScores.length = 5;
       drawHighScores(localHighScores);
     } else {
-      drawHighScores(localHighScores);
+      drawHighScores(localHighScores.reverse());
     }
     localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
   }

@@ -6,14 +6,14 @@ const expansionContraction = .20;
 const bubbleVelocity = .25;
 const scoreKey = 'highScores';
 const backButton = {
-  x: canvas.width,
+  x: 0,
   y: canvas.height + 250,
   width: 200,
   height: 50,
   text: 'Back to Menu'
 };
 const restartButton = {
-  x: canvas.width,
+  x: 0,
   y: canvas.height + 150,
   width: 200,
   height: 50,
@@ -87,7 +87,9 @@ function drawScore() {
 function drawTime() {
   context.font = '3vw Helvetica';
   context.fillStyle = '#000000';
-  context.fillText(`Seconds left: ${time}`, canvas.width - 200, 30);
+  const timeLeft = `Seconds left: ${time}`;
+  const timeLeftWidth = context.measureText(timeLeft).width;
+  context.fillText(timeLeft, (canvas.width - 10) - timeLeftWidth, 30);
 }
 
 // Draws a circle with the given parameters
@@ -104,11 +106,12 @@ function drawCircle(x, y, radius, color) {
 
 function drawRectangle(x, y, width, height, text) {
   context.beginPath();
-  context.rect(x, y, width, height);
+  context.rect((canvas.width / 2) - (width / 2), y, width, height);
   context.stroke();
   context.font = '3vw Helvetica';
   context.fillStyle = '#000000';
-  context.fillText(text, x + 28, y + 35);
+  const textWidth = context.measureText(text).width;
+  context.fillText(text, (canvas.width / 2) - (textWidth / 2), y + 35);
 }
 
 // Returns an integer between min (inclusive) and max (inclusive)
@@ -227,12 +230,15 @@ function drawHighScores(scores) {
   const yOffset = 50;
   context.font = '4vw Helvetica';
   context.fillStyle = '#000000';
-  context.fillText('High Scores:', canvas.width / 2 - 100, canvas.height / 2 + yGap);
+  const highScoreString = 'High Scores:';
+  const highScoreStringWidth = context.measureText(highScoreString).width;
+  context.fillText(highScoreString, (canvas.width / 2) - (highScoreStringWidth / 2), canvas.height / 2 + yGap);
   yGap += yOffset;
   scores.forEach(function(highScore) {
     context.font = '3vw Helvetica';
     context.fillStyle = '#000000';
-    context.fillText(highScore, canvas.width / 2 - 20, canvas.height / 2 + yGap);
+    const scoreStringWidth = context.measureText(highScore).width;
+    context.fillText(highScore, (canvas.width / 2) - (scoreStringWidth / 2), canvas.height / 2 + yGap);
     yGap += yOffset;
   });
 }
@@ -255,7 +261,10 @@ function draw() {
     time = 0;
     context.font = '7vw Helvetica';
     context.fillStyle = '#000000';
-    context.fillText('Game Over...', canvas.width / 2 - 175, canvas.height / 2 - 200);
+    const gameOverString = 'Game Over...';
+    const gameOverStringWidth = context.measureText(gameOverString).width;
+    context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2), 
+      canvas.height / 2 - 200);
     drawRectangle(backButton.x, backButton.y, backButton.width, 
       backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
@@ -265,7 +274,7 @@ function draw() {
     if (localHighScores.length < 5 && overCount < 2) {
       localHighScores.push(score);
       localHighScores = localHighScores.sort((a, b) => a - b);
-      drawHighScores(localHighScores.reverse());
+      drawHighScores(localHighScores.slice().reverse());
     } else if (checkForHighScore(localHighScores, score) && overCount < 2) {
       localHighScores.push(score);
       localHighScores = localHighScores.sort((a, b) => a - b);
@@ -273,7 +282,7 @@ function draw() {
       localHighScores.length = 5;
       drawHighScores(localHighScores);
     } else {
-      drawHighScores(localHighScores.reverse());
+      drawHighScores(localHighScores.slice().reverse());
     }
     localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
   }

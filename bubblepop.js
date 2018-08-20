@@ -7,14 +7,14 @@ const bubbleVelocity = .25;
 const scoreKey = 'highScores';
 const backButton = {
   x: 0,
-  y: canvas.height + 250,
+  y: canvas.height + 150,
   width: 200,
   height: 50,
   text: 'Back to Menu'
 };
 const restartButton = {
   x: 0,
-  y: canvas.height + 150,
+  y: canvas.height + 50,
   width: 200,
   height: 50,
   text: 'Play Again?'
@@ -227,7 +227,7 @@ function checkForHighScore(highScores, localScore) {
 
 // Draws the high score array
 function drawHighScores(scores) {
-  let yGap = 75;
+  let yGap = 0;
   const yOffset = 50;
   context.font = '4vw Helvetica';
   context.fillStyle = '#000000';
@@ -265,7 +265,7 @@ function draw() {
     const gameOverString = 'Game Over...';
     const gameOverStringWidth = context.measureText(gameOverString).width;
     context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2), 
-      canvas.height / 2 - 200);
+      canvas.height / 2 - 300);
     drawRectangle(backButton.x, backButton.y, backButton.width, 
       backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,

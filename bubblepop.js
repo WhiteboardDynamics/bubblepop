@@ -227,8 +227,8 @@ function checkForHighScore(highScores, localScore) {
 
 // Draws the high score array
 function drawHighScores(scores) {
-  let yGap = 0;
-  const yOffset = 50;
+  let yGap = 50;
+  const yOffset = 25;
   context.font = '4vw Helvetica';
   context.fillStyle = '#000000';
   const highScoreString = 'High Scores:';
@@ -265,7 +265,7 @@ function draw() {
     const gameOverString = 'Game Over...';
     const gameOverStringWidth = context.measureText(gameOverString).width;
     context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2), 
-      canvas.height / 2 - 300);
+      canvas.height / 2 - 200);
     drawRectangle(backButton.x, backButton.y, backButton.width, 
       backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,

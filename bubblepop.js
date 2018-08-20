@@ -46,7 +46,8 @@ function intersectCircle(point, circle) {
 
 // Is the point within the rectangle?
 function intersectRectangle(point, rectangle){
-  return rectangle.x <= point.x && point.x <= rectangle.x + rectangle.width &&
+  const rectangleX = (canvas.width / 2) - (rectangle.width / 2);
+  return rectangleX <= point.x && point.x <= rectangleX + rectangle.width &&
     rectangle.y <= point.y && point.y <= rectangle.y + rectangle.height;
 }
 
@@ -278,7 +279,9 @@ function draw() {
     } else if (checkForHighScore(localHighScores, score) && overCount < 2) {
       localHighScores.push(score);
       localHighScores = localHighScores.sort((a, b) => a - b);
-      localHighScores.reverse();
+      if(localHighScores[localHighScores.length - 1] < localHighScores[0]) {
+        localHighScores.reverse();
+      }
       localHighScores.length = 5;
       drawHighScores(localHighScores);
     } else {

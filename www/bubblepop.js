@@ -61,14 +61,14 @@ function clickHandler(event) {
 
 // Draws the current score
 function drawScore() {
-  context.font = '3vw Helvetica';
+  context.font = '3vmin Helvetica';
   context.fillStyle = '#000000';
   context.fillText(`Score: ${score}`, 10, 30);
 }
 
 // Draws the remaining time
 function drawTime() {
-  context.font = '3vw Helvetica';
+  context.font = '3vmin Helvetica';
   context.fillStyle = '#000000';
   const timeLeft = `Seconds left: ${time}`;
   const timeLeftWidth = context.measureText(timeLeft).width;
@@ -91,7 +91,7 @@ function drawRectangle(x, y, width, height, text) {
   context.beginPath();
   context.rect((canvas.width / 2) - (width / 2), y, width, height);
   context.stroke();
-  context.font = '3vw Helvetica';
+  context.font = '3vmin Helvetica';
   context.fillStyle = '#000000';
   const textWidth = context.measureText(text).width;
   context.fillText(text, (canvas.width / 2) - (textWidth / 2), y + 35);
@@ -211,14 +211,14 @@ function checkForHighScore(highScores, localScore) {
 function drawHighScores(scores) {
   let yGap = 50;
   const yOffset = 25;
-  context.font = '4vw Helvetica';
+  context.font = '4vmin Helvetica';
   context.fillStyle = '#000000';
   const highScoreString = 'High Scores:';
   const highScoreStringWidth = context.measureText(highScoreString).width;
   context.fillText(highScoreString, (canvas.width / 2) - (highScoreStringWidth / 2), canvas.height / 2 + yGap);
   yGap += yOffset;
   scores.forEach(function(highScore) {
-    context.font = '3vw Helvetica';
+    context.font = '3vmin Helvetica';
     context.fillStyle = '#000000';
     const scoreStringWidth = context.measureText(highScore).width;
     context.fillText(highScore, (canvas.width / 2) - (scoreStringWidth / 2), canvas.height / 2 + yGap);
@@ -242,12 +242,12 @@ function draw() {
     gameOver = true;
     overCount++;
     time = 0;
-    context.font = '7vw Helvetica';
+    context.font = '7vmin Helvetica';
     context.fillStyle = '#000000';
-    const gameOverString = 'Game Over...';
+    const gameOverString = 'Game Over';
     const gameOverStringWidth = context.measureText(gameOverString).width;
     context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2),
-                     canvas.height / 2 - 200);
+                     150);
     drawRectangle(backButton.x, backButton.y, backButton.width,
                   backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
@@ -290,7 +290,7 @@ function onDeviceReady() {
     y: canvas.height + 50,
     width: 200,
     height: 50,
-    text: 'Play Again?'
+    text: 'Play Again'
   };
 
   if (localStorage.getItem(scoreKey) === null) {

@@ -1,24 +1,16 @@
-const canvas = document.getElementById('game');
-const context = canvas.getContext("2d");
+'use strict';
+
+// Declarations to be set during initialization
+let canvas = {};
+let context = {};
+let backButton = {};
+let restartButton = {};
+
 const bubblePoints = 50;
 const startTime = Math.round((new Date()).getTime() / 1000);
 const expansionContraction = .20;
 const bubbleVelocity = .25;
 const scoreKey = 'highScores';
-const backButton = {
-  x: 0,
-  y: canvas.height + 150,
-  width: 200,
-  height: 50,
-  text: 'Back to Menu'
-};
-const restartButton = {
-  x: 0,
-  y: canvas.height + 50,
-  width: 200,
-  height: 50,
-  text: 'Play Again?'
-};
 let spawnRate = 1;
 let score = 0;
 let time = 10;
@@ -27,21 +19,11 @@ let spawnNumber = 1;
 let gameOver = false;
 let overCount = 0;
 
-window.onload = function() {
-  if (localStorage.getItem(scoreKey) === null) {
-    localStorage.setItem(scoreKey, JSON.stringify([]));
-  }
-
-  setInterval(function() {
-    time--;
-  }, 1000);
-}
-
 // Is the point within the circle?
 function intersectCircle(point, circle) {
   // Check whether the distance from the center of the circle to the
   // point is less than the circle's radius.
-  return Math.sqrt((point.x - circle.x) ** 2 + (point.y - circle.y) ** 2) < circle.radius;
+  return Math.sqrt(Math.pow(point.x - circle.x, 2) + Math.pow(point.y - circle.y, 2)) < circle.radius;
 }
 
 // Is the point within the rectangle?
@@ -72,7 +54,7 @@ function clickHandler(event) {
     if (intersectRectangle(position, backButton)) {
       window.location.href = 'index.html';
     } else if (intersectRectangle(position, restartButton)) {
-      window.location.reload(false); 
+      window.location.reload(false);
     }
   }
 }
@@ -264,21 +246,21 @@ function draw() {
     context.fillStyle = '#000000';
     const gameOverString = 'Game Over...';
     const gameOverStringWidth = context.measureText(gameOverString).width;
-    context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2), 
-      canvas.height / 2 - 200);
-    drawRectangle(backButton.x, backButton.y, backButton.width, 
-      backButton.height, backButton.text);
+    context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2),
+                     canvas.height / 2 - 200);
+    drawRectangle(backButton.x, backButton.y, backButton.width,
+                  backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
-      restartButton.height, restartButton.text);
+                  restartButton.height, restartButton.text);
 
     let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
     if (localHighScores.length < 5 && overCount < 2) {
       localHighScores.push(score);
-      localHighScores = localHighScores.sort((a, b) => a - b);
+      localHighScores = localHighScores.sort(function(a, b){a - b});
       drawHighScores(localHighScores.slice().reverse());
     } else if (checkForHighScore(localHighScores, score) && overCount < 2) {
       localHighScores.push(score);
-      localHighScores = localHighScores.sort((a, b) => a - b);
+      localHighScores = localHighScores.sort(function(a, b){a - b});
       if(localHighScores[localHighScores.length - 1] < localHighScores[0]) {
         localHighScores.reverse();
       }
@@ -291,7 +273,47 @@ function draw() {
   }
 }
 
-// Add event listeners to the window
-canvas.addEventListener('click', clickHandler, false);
-window.addEventListener('load', draw(), false);
-canvas.addEventListener('resize', draw(), false);
+function onDeviceReady() {
+  console.log("ready");
+  canvas = document.getElementById('game');
+  context = canvas.getContext("2d");
+
+  backButton = {
+    x: 0,
+    y: canvas.height + 150,
+    width: 200,
+    height: 50,
+    text: 'Back to Menu'
+  };
+  restartButton = {
+    x: 0,
+    y: canvas.height + 50,
+    width: 200,
+    height: 50,
+    text: 'Play Again?'
+  };
+
+  if (localStorage.getItem(scoreKey) === null) {
+    localStorage.setItem(scoreKey, JSON.stringify([]));
+  }
+
+  setInterval(function() {
+    time--;
+  }, 1000);
+
+  // Add event listeners to the window
+  canvas.addEventListener('click', clickHandler, false);
+  window.addEventListener('load', draw(), false);
+  canvas.addEventListener('resize', draw(), false);
+}
+
+function onLoad() {
+  console.log("loaded");
+  if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
+    console.log("mobile");
+    document.addEventListener("deviceready", onDeviceReady, false);
+  } else {
+    console.log("browser");
+    onDeviceReady();
+  }
+}

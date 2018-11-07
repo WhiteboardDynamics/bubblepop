@@ -2,7 +2,7 @@
 
 <widget xmlns     = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
-        id        = "com.example.c1541463005629"
+        id        = "com.mydomain.c1541463005629"
         version   = "1.0.0">
 
   <name>Bubblepop</name>
@@ -32,4 +32,6 @@
     <allow-intent href="market:*"/>
     <preference name="enabled" value="true"/>
   </platform>
+
+  <preference name="android-targetSdkVersion" value="26" />
 </widget>

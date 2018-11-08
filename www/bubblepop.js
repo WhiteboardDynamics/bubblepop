@@ -43,8 +43,11 @@ function clickHandler(event) {
 
   // Check if the click event is over any of the bubbles
   bubbles.forEach(function(bubble, index, bubbles) {
+    // If click is in this bubble
     if (intersectCircle(position, bubbles[index])) {
+      // Increase score
       score += 10;
+      // Remove bubble
       bubbles.splice(index, 1);
     }
   });
@@ -228,8 +231,7 @@ function drawHighScores(scores) {
 
 // Redraws the screen each tick
 function draw() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  context.clearRect(0, 0, canvas.width, canvas.height);
 
   drawTime();
   drawScore();
@@ -273,10 +275,16 @@ function draw() {
   }
 }
 
+function onResize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
 function onDeviceReady() {
-  console.log("ready");
   canvas = document.getElementById('game');
   context = canvas.getContext("2d");
+
+  onResize();
 
   backButton = {
     x: 0,
@@ -303,17 +311,14 @@ function onDeviceReady() {
 
   // Add event listeners to the window
   canvas.addEventListener('click', clickHandler, false);
-  window.addEventListener('load', draw(), false);
-  canvas.addEventListener('resize', draw(), false);
+  window.addEventListener('resize', onResize, false);
+  draw();
 }
 
 function onLoad() {
-  console.log("loaded");
   if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
-    console.log("mobile");
     document.addEventListener("deviceready", onDeviceReady, false);
   } else {
-    console.log("browser");
     onDeviceReady();
   }
 }

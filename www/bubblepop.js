@@ -297,14 +297,14 @@ function onResize() {
 
   backButton = {
     x: 0,
-    y: 250,
+    y: 225,
     width: 200,
     height: 50,
     text: 'Back to Menu'
   };
   restartButton = {
     x: 0,
-    y: 350,
+    y: 300,
     width: 200,
     height: 50,
     text: 'Play Again'

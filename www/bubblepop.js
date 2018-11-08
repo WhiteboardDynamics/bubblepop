@@ -17,7 +17,6 @@ let time = 10;
 let bubbles = [];
 let spawnNumber = 1;
 let gameOver = false;
-let overCount = 0;
 
 // Is the point within the circle?
 function intersectCircle(point, circle) {
@@ -242,7 +241,6 @@ function draw() {
     requestAnimationFrame(draw);
   } else {
     gameOver = true;
-    overCount++;
     time = 0;
     context.font = '7vmin Helvetica';
     context.fillStyle = '#000000';
@@ -255,22 +253,13 @@ function draw() {
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
                   restartButton.height, restartButton.text);
 
-    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
-    if (localHighScores.length < 5 && overCount < 2) {
+    let localHighScores = JSON.parse(localStorage.getItem(scoreKey)).slice();
+    if (localHighScores.length < 5 || checkForHighScore(localHighScores, score)) {
       localHighScores.push(score);
-      localHighScores = localHighScores.sort(function(a, b){a - b});
-      drawHighScores(localHighScores.slice().reverse());
-    } else if (checkForHighScore(localHighScores, score) && overCount < 2) {
-      localHighScores.push(score);
-      localHighScores = localHighScores.sort(function(a, b){a - b});
-      if(localHighScores[localHighScores.length - 1] < localHighScores[0]) {
-        localHighScores.reverse();
-      }
-      localHighScores.length = 5;
-      drawHighScores(localHighScores);
-    } else {
-      drawHighScores(localHighScores.slice().reverse());
     }
+    localHighScores.sort(function(a, b){return b - a;});
+    localHighScores = localHighScores.slice(0,5);
+    drawHighScores(localHighScores);
     localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
   }
 }
@@ -278,13 +267,6 @@ function draw() {
 function onResize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-}
-
-function onDeviceReady() {
-  canvas = document.getElementById('game');
-  context = canvas.getContext("2d");
-
-  onResize();
 
   backButton = {
     x: 0,
@@ -300,6 +282,13 @@ function onDeviceReady() {
     height: 50,
     text: 'Play Again'
   };
+}
+
+function onDeviceReady() {
+  canvas = document.getElementById('game');
+  context = canvas.getContext("2d");
+
+  onResize();
 
   if (localStorage.getItem(scoreKey) === null) {
     localStorage.setItem(scoreKey, JSON.stringify([]));

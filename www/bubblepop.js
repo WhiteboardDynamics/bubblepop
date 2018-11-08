@@ -17,6 +17,7 @@ let time = 10;
 let bubbles = [];
 let spawnNumber = 1;
 let gameOver = false;
+let timer = null;
 
 // Is the point within the circle?
 function intersectCircle(point, circle) {
@@ -83,7 +84,7 @@ function drawTime() {
 // Draws a circle with the given parameters
 function drawCircle(x, y, radius, color) {
   if (radius <= 0) {
-    return false;
+    return;
   }
   context.beginPath();
   context.arc(x, y, radius, 0, Math.PI * 2);
@@ -109,8 +110,8 @@ function randomInteger(min, max) {
 
 // Returns a random color
 function randomColor() {
-  return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
-}
+  return '#' + (Math.random() * 0xFFFFFF << 0).toString(16);}
+
 
 // Returns a random angle between -Pi and Pi
 function randomAngle() {
@@ -169,9 +170,7 @@ function flipAngleHorizontal(bubble) {
 // Update bubbles positions and angles
 function updateBubbles() {
   bubbles.forEach(function(bubble, index, bubbles) {
-    const negativeCheck = drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
-
-    if (negativeCheck === false) {
+    if (bubble.radius < 0) {
       time -= 10;
       bubbles.splice(index, 1);
     } else {
@@ -198,6 +197,13 @@ function updateBubbles() {
 
       bubbles[index] = bubble;
     }
+  });
+}
+
+// Draw bubbles
+function drawBubbles() {
+  bubbles.forEach(function(bubble, index, bubbles) {
+    drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
   });
 }
 
@@ -231,20 +237,20 @@ function drawHighScores(scores) {
   });
 }
 
+function update() {
+  spawnBubbles();
+  updateBubbles();
+}
+
 // Redraws the screen each tick
 function draw() {
   context.clearRect(0, 0, canvas.width, canvas.height);
 
   drawTime();
   drawScore();
-  spawnBubbles();
-  updateBubbles();
+  drawBubbles();
 
-  if (time > 0 && gameOver === false) {
-    requestAnimationFrame(draw);
-  } else {
-    gameOver = true;
-    time = 0;
+  if (gameOver === true) {
     context.font = '7vmin Helvetica';
     context.fillStyle = '#000000';
     const gameOverString = 'Game Over';
@@ -255,16 +261,34 @@ function draw() {
                   backButton.height, backButton.text);
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
                   restartButton.height, restartButton.text);
+    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
+    drawHighScores(localHighScores);
+  }
+}
 
+function loop() {
+  if (time > 0 && gameOver === false) {
+    update();
+    requestAnimationFrame(loop);
+  }
+  else if (gameOver === false) {
+    gameOver = true;
+
+    // clear out timer
+    time = 0;
+    clearInterval(timer);
+
+    // update high scores
     let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
     if (localHighScores.length < 5 || checkForHighScore(localHighScores, score)) {
       localHighScores.push(score);
     }
     localHighScores.sort(function(a, b){return b - a;});
     localHighScores = localHighScores.slice(0,5);
-    drawHighScores(localHighScores);
     localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
   }
+
+  draw();
 }
 
 function onResize() {
@@ -273,18 +297,20 @@ function onResize() {
 
   backButton = {
     x: 0,
-    y: canvas.height + 150,
+    y: 250,
     width: 200,
     height: 50,
     text: 'Back to Menu'
   };
   restartButton = {
     x: 0,
-    y: canvas.height + 50,
+    y: 350,
     width: 200,
     height: 50,
     text: 'Play Again'
   };
+
+  draw();
 }
 
 function onDeviceReady() {
@@ -297,14 +323,14 @@ function onDeviceReady() {
     localStorage.setItem(scoreKey, JSON.stringify([]));
   }
 
-  setInterval(function() {
+  timer = setInterval(function() {
     time--;
   }, 1000);
 
   // Add event listeners to the window
   canvas.addEventListener('click', clickHandler, false);
   window.addEventListener('resize', onResize, false);
-  draw();
+  loop();
 }
 
 function onLoad() {

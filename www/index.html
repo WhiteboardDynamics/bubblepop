@@ -22,7 +22,7 @@
   <script type="text/javascript">
     const highScores = JSON.parse(localStorage.getItem('highScores'));
 
-    highScores.reverse().forEach(function(score) {
+    highScores.forEach(function(score) {
       $('#high-scores').append($(`<li>${score}</br>`));
     });
   </script>

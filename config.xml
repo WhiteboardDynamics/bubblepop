@@ -34,4 +34,5 @@
   </platform>
 
   <preference name="android-targetSdkVersion" value="26" />
+  <preference name="android-minSdkVersion" value="23" />
 </widget>

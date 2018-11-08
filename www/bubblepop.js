@@ -40,16 +40,19 @@ function clickHandler(event) {
     y: event.clientY
   };
 
-  // Check if the click event is over any of the bubbles
-  bubbles.forEach(function(bubble, index, bubbles) {
-    // If click is in this bubble
-    if (intersectCircle(position, bubbles[index])) {
+  // Remove bubbles clicked on
+  let newBubbles = [];
+  for (var i = 0; i < bubbles.length; i++) {
+    if (intersectCircle(position, bubbles[i])) {
       // Increase score
       score += 10;
-      // Remove bubble
-      bubbles.splice(index, 1);
     }
-  });
+    else {
+      // Keep bubble
+      newBubbles.push(bubbles[i]);
+    }
+  }
+  bubbles = newBubbles;
 
   // Check if the click event is over the back button
   if (gameOver === true) {
@@ -253,7 +256,7 @@ function draw() {
     drawRectangle(restartButton.x, restartButton.y, restartButton.width,
                   restartButton.height, restartButton.text);
 
-    let localHighScores = JSON.parse(localStorage.getItem(scoreKey)).slice();
+    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
     if (localHighScores.length < 5 || checkForHighScore(localHighScores, score)) {
       localHighScores.push(score);
     }

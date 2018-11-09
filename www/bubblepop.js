@@ -33,89 +33,60 @@ let time = 10;
 let gameOver = false;
 let timer = null;
 
-// Is the point within the circle?
-function intersectCircle(point, circle) {
-  // Check whether the distance from the center of the circle to the
-  // point is less than the circle's radius.
-  return Math.sqrt(Math.pow(point.x - circle.x, 2) + Math.pow(point.y - circle.y, 2)) < circle.radius;
-}
+// Game starts here
+function onDeviceReady() {
+  canvas = document.getElementById('game');
+  context = canvas.getContext("2d");
 
-// Is the point within the rectangle?
-function intersectRectangle(point, rectangle){
-  const rectangleX = (canvas.width / 2) - (rectangle.width / 2);
-  return rectangleX <= point.x && point.x <= rectangleX + rectangle.width &&
-    rectangle.y <= point.y && point.y <= rectangle.y + rectangle.height;
-}
+  onResize();
 
-// Event listener for click events
-function clickHandler(event) {
-  // Get the position of the click event
-  const position = {
-    x: event.clientX,
-    y: event.clientY
-  };
-
-  // Remove bubbles clicked on
-  let newBubbles = [];
-  for (var i = 0; i < bubbles.length; i++) {
-    if (intersectCircle(position, bubbles[i])) {
-      // Increase score
-      score += 10;
-    }
-    else {
-      // Keep bubble
-      newBubbles.push(bubbles[i]);
-    }
+  if (localStorage.getItem(scoreKey) === null) {
+    localStorage.setItem(scoreKey, JSON.stringify([]));
   }
-  bubbles = newBubbles;
 
-  // Check if the click event is over the back button
-  if (gameOver === true) {
-    if (intersectRectangle(position, backButton)) {
-      window.location.href = 'index.html';
-    } else if (intersectRectangle(position, restartButton)) {
-      window.location.reload(false);
+  timer = setInterval(function() {
+    time--;
+  }, 1000);
+
+  // Add event listeners to the window
+  canvas.addEventListener('click', clickHandler, false);
+  window.addEventListener('resize', onResize, false);
+  loop();
+}
+
+// Main game loop
+function loop() {
+  if (time > 0 && gameOver === false) {
+    update();
+    requestAnimationFrame(loop);
+  }
+  else if (gameOver === false) {
+    gameOver = true;
+
+    // clear out timer
+    time = 0;
+    clearInterval(timer);
+
+    // update high scores
+    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
+    if (localHighScores.length < 5 || checkForHighScore(localHighScores, score)) {
+      localHighScores.push(score);
     }
+    localHighScores.sort(function(a, b){return b - a;});
+    localHighScores = localHighScores.slice(0,5);
+    localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
   }
+
+  draw();
 }
 
-// Draws the current score
-function drawScore() {
-  context.font = '3vmin Helvetica';
-  context.fillStyle = '#000000';
-  context.fillText(`Score: ${score}`, 10, 30);
+// Called when game is running to update the bubbles
+function update() {
+  spawnBubbles();
+  updateBubbles();
 }
 
-// Draws the remaining time
-function drawTime() {
-  context.font = '3vmin Helvetica';
-  context.fillStyle = '#000000';
-  const timeLeft = `Seconds left: ${time}`;
-  const timeLeftWidth = context.measureText(timeLeft).width;
-  context.fillText(timeLeft, (canvas.width - 10) - timeLeftWidth, 30);
-}
-
-// Draws a circle with the given parameters
-function drawCircle(x, y, radius, color) {
-  if (radius <= 0) {
-    return;
-  }
-  context.beginPath();
-  context.arc(x, y, radius, 0, Math.PI * 2);
-  context.fillStyle = color;
-  context.fill();
-  context.closePath();
-}
-
-function drawRectangle(x, y, width, height, text) {
-  context.beginPath();
-  context.rect((canvas.width / 2) - (width / 2), y, width, height);
-  context.stroke();
-  context.font = '3vmin Helvetica';
-  context.fillStyle = '#000000';
-  const textWidth = context.measureText(text).width;
-  context.fillText(text, (canvas.width / 2) - (textWidth / 2), y + 35);
-}
+// SPAWNING AND MOVING BUBBLES
 
 // Returns an integer between min (inclusive) and max (inclusive)
 function randomInteger(min, max) {
@@ -227,22 +198,117 @@ function updateBubbles() {
   });
 }
 
-// Draw bubbles
-function drawBubbles() {
-  bubbles.forEach(function(bubble, index, bubbles) {
-    drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
-  });
+// EVENT HANDLERS
+
+// Is the point within the circle?
+function intersectCircle(point, circle) {
+  // Check whether the distance from the center of the circle to the
+  // point is less than the circle's radius.
+  return Math.sqrt(Math.pow(point.x - circle.x, 2) + Math.pow(point.y - circle.y, 2)) < circle.radius;
 }
 
-// Checks if the current score is large enough to be a high score
-function checkForHighScore(highScores, localScore) {
-  let check = false;
-  highScores.forEach(function(hs) {
-    if (localScore > hs) {
-      check = true;
+// Is the point within the rectangle?
+function intersectRectangle(point, rectangle){
+  const rectangleX = (canvas.width / 2) - (rectangle.width / 2);
+  return rectangleX <= point.x && point.x <= rectangleX + rectangle.width &&
+    rectangle.y <= point.y && point.y <= rectangle.y + rectangle.height;
+}
+
+// Event listener for click events
+function clickHandler(event) {
+  // Get the position of the click event
+  const position = {
+    x: event.clientX,
+    y: event.clientY
+  };
+
+  // Remove bubbles clicked on
+  let newBubbles = [];
+  for (var i = 0; i < bubbles.length; i++) {
+    if (intersectCircle(position, bubbles[i])) {
+      // Increase score
+      score += 10;
     }
-  });
-  return check;
+    else {
+      // Keep bubble
+      newBubbles.push(bubbles[i]);
+    }
+  }
+  bubbles = newBubbles;
+
+  // Check if the click event is over the back button
+  if (gameOver === true) {
+    if (intersectRectangle(position, backButton)) {
+      window.location.href = 'index.html';
+    } else if (intersectRectangle(position, restartButton)) {
+      window.location.reload(false);
+    }
+  }
+}
+
+// When the window is resized
+function onResize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  backButton = {
+    x: 0,
+    y: 225,
+    width: 200,
+    height: 50,
+    text: 'Back to Menu'
+  };
+  restartButton = {
+    x: 0,
+    y: 300,
+    width: 200,
+    height: 50,
+    text: 'Play Again'
+  };
+
+  draw();
+}
+
+
+// DRAWING CODE
+
+// Draws the current score
+function drawScore() {
+  context.font = '3vmin Helvetica';
+  context.fillStyle = '#000000';
+  context.fillText(`Score: ${score}`, 10, 30);
+}
+
+// Draws the remaining time
+function drawTime() {
+  context.font = '3vmin Helvetica';
+  context.fillStyle = '#000000';
+  const timeLeft = `Seconds left: ${time}`;
+  const timeLeftWidth = context.measureText(timeLeft).width;
+  context.fillText(timeLeft, (canvas.width - 10) - timeLeftWidth, 30);
+}
+
+// Draws a circle with the given parameters
+function drawCircle(x, y, radius, color) {
+  if (radius <= 0) {
+    return;
+  }
+  context.beginPath();
+  context.arc(x, y, radius, 0, Math.PI * 2);
+  context.fillStyle = color;
+  context.fill();
+  context.closePath();
+}
+
+// Draw a button
+function drawRectangle(x, y, width, height, text) {
+  context.beginPath();
+  context.rect((canvas.width / 2) - (width / 2), y, width, height);
+  context.stroke();
+  context.font = '3vmin Helvetica';
+  context.fillStyle = '#000000';
+  const textWidth = context.measureText(text).width;
+  context.fillText(text, (canvas.width / 2) - (textWidth / 2), y + 35);
 }
 
 // Draws the high score array
@@ -264,9 +330,11 @@ function drawHighScores(scores) {
   });
 }
 
-function update() {
-  spawnBubbles();
-  updateBubbles();
+// Draw bubbles
+function drawBubbles() {
+  bubbles.forEach(function(bubble, index, bubbles) {
+    drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
+  });
 }
 
 // Redraws the screen each tick
@@ -293,73 +361,20 @@ function draw() {
   }
 }
 
-function loop() {
-  if (time > 0 && gameOver === false) {
-    update();
-    requestAnimationFrame(loop);
-  }
-  else if (gameOver === false) {
-    gameOver = true;
+// MISC
 
-    // clear out timer
-    time = 0;
-    clearInterval(timer);
-
-    // update high scores
-    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
-    if (localHighScores.length < 5 || checkForHighScore(localHighScores, score)) {
-      localHighScores.push(score);
+// Checks if the current score is large enough to be a high score
+function checkForHighScore(highScores, localScore) {
+  let check = false;
+  highScores.forEach(function(hs) {
+    if (localScore > hs) {
+      check = true;
     }
-    localHighScores.sort(function(a, b){return b - a;});
-    localHighScores = localHighScores.slice(0,5);
-    localStorage.setItem(scoreKey, JSON.stringify(localHighScores));
-  }
-
-  draw();
+  });
+  return check;
 }
 
-function onResize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  backButton = {
-    x: 0,
-    y: 225,
-    width: 200,
-    height: 50,
-    text: 'Back to Menu'
-  };
-  restartButton = {
-    x: 0,
-    y: 300,
-    width: 200,
-    height: 50,
-    text: 'Play Again'
-  };
-
-  draw();
-}
-
-function onDeviceReady() {
-  canvas = document.getElementById('game');
-  context = canvas.getContext("2d");
-
-  onResize();
-
-  if (localStorage.getItem(scoreKey) === null) {
-    localStorage.setItem(scoreKey, JSON.stringify([]));
-  }
-
-  timer = setInterval(function() {
-    time--;
-  }, 1000);
-
-  // Add event listeners to the window
-  canvas.addEventListener('click', clickHandler, false);
-  window.addEventListener('resize', onResize, false);
-  loop();
-}
-
+// Device setup to work on mobile and browser
 function onLoad() {
   if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
     document.addEventListener("deviceready", onDeviceReady, false);

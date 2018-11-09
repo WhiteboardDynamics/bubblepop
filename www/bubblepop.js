@@ -1,21 +1,35 @@
 'use strict';
 
+// Game configuration parameters
+
+// How fast bubbles grow and shrink
+const expansionContractionRate = .20;
+// Max bubble size
+const maxBubbleSize = 50;
+// How fast bubbles move
+const bubbleVelocity = .5;
+// Initial number of bubbles
+let spawnNumber = 1;
+// Number of seconds between increases in number of bubbles
+const spawnRate = 1;
+// How much number of bubbles grows at each increase
+const spawnNumberGrowth = .35;
+
 // Declarations to be set during initialization
 let canvas = {};
 let context = {};
 let backButton = {};
 let restartButton = {};
 
-const bubblePoints = 50;
-const startTime = Math.round((new Date()).getTime() / 1000);
-const expansionContraction = .20;
-const bubbleVelocity = .25;
+let lastSpawnIncrease = Math.round((new Date()).getTime() / 1000);
 const scoreKey = 'highScores';
-let spawnRate = 1;
+
+// Array of bubbles on the screen
+let bubbles = [];
+
+// Initial game values
 let score = 0;
 let time = 10;
-let bubbles = [];
-let spawnNumber = 1;
 let gameOver = false;
 let timer = null;
 
@@ -120,12 +134,14 @@ function randomAngle() {
 
 // Creates more bubbles if necessary
 function spawnBubbles() {
-  if (Math.round((new Date()).getTime() / 1000) > startTime + spawnRate) {
-    spawnNumber += .35;
-    spawnRate += 2;
+  if (Math.round((new Date()).getTime() / 1000) > lastSpawnIncrease + spawnRate) {
+    spawnNumber += spawnNumberGrowth;
+    lastSpawnIncrease = lastSpawnIncrease + spawnRate;
   }
 
+  // Create new bubbles
   for (let i = spawnNumber - bubbles.length; i > 0; i--) {
+    // Create new bubble at a random location with random values
     const radius = randomInteger(5, 50);
     const x = randomInteger(50, canvas.width - 50);
     const y = randomInteger(50, canvas.height - 50);
@@ -170,25 +186,36 @@ function flipAngleHorizontal(bubble) {
 // Update bubbles positions and angles
 function updateBubbles() {
   bubbles.forEach(function(bubble, index, bubbles) {
+    // if the bubble radius is below zero it has shrunk to nothing
     if (bubble.radius < 0) {
-      time -= 10;
+      // reduce time left on bubble missed
+      time -= 1;
+      // Remove the bubble
       bubbles.splice(index, 1);
-    } else {
-      if (bubble.radius < 50 && bubble.ascending === true) {
-        bubble.radius += expansionContraction;
+    }
+    else {
+      // When bubble is growing
+      if (bubble.radius < maxBubbleSize && bubble.ascending === true) {
+        // Increase the size of the bubble
+        bubble.radius += expansionContractionRate;
       }
+      // Otherwise
       else {
-        bubble.radius -= expansionContraction;
+        // Shrink the size of the bubble
+        bubble.radius -= expansionContractionRate;
         bubble.ascending = false;
       }
 
+      // Calculate where bubble is going
       const bubbleAngle = bubble.angle;
       const movementX = Math.cos(bubbleAngle) * bubbleVelocity;
       const movementY = -Math.sin(bubbleAngle) * bubbleVelocity;
 
+      // Move the bubble
       bubble.x += movementX;
       bubble.y += movementY;
 
+      // Check for wall collisions and bounce the bubbles
       if (collideVerticalWall(bubble)) {
         bubble.angle = flipAngleVertical(bubble);
       } else if (collideHorizontalWall(bubble)) {

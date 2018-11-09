@@ -26,6 +26,8 @@ const scoreKey = 'highScores';
 
 // Array of bubbles on the screen
 let bubbles = [];
+// Loaded images
+let images = {};
 
 // Initial game values
 let score = 0;
@@ -44,6 +46,7 @@ function onDeviceReady() {
     localStorage.setItem(scoreKey, JSON.stringify([]));
   }
 
+  // Create timer to recuce seconds left every second
   timer = setInterval(function() {
     time--;
   }, 1000);
@@ -269,8 +272,38 @@ function onResize() {
   draw();
 }
 
-
 // DRAWING CODE
+
+// Redraws the screen each tick
+function draw() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawTime();
+  drawScore();
+  drawBubbles();
+
+  if (gameOver === true) {
+    context.font = '7vmin Helvetica';
+    context.fillStyle = '#000000';
+    const gameOverString = 'Game Over';
+    const gameOverStringWidth = context.measureText(gameOverString).width;
+    context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2),
+                     150);
+    drawRectangle(backButton.x, backButton.y, backButton.width,
+                  backButton.height, backButton.text);
+    drawRectangle(restartButton.x, restartButton.y, restartButton.width,
+                  restartButton.height, restartButton.text);
+    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
+    drawHighScores(localHighScores);
+  }
+}
+
+// Draw bubbles
+function drawBubbles() {
+  bubbles.forEach(function(bubble, index, bubbles) {
+    drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
+  });
+}
 
 // Draws the current score
 function drawScore() {
@@ -298,6 +331,14 @@ function drawCircle(x, y, radius, color) {
   context.fillStyle = color;
   context.fill();
   context.closePath();
+}
+
+// Draw image
+function drawImage(imageName, x, y, w, h) {
+  let image = images[imageName];
+  if (image !== undefined) {
+    context.drawImage(image, x, y, w, h);
+  }
 }
 
 // Draw a button
@@ -330,38 +371,16 @@ function drawHighScores(scores) {
   });
 }
 
-// Draw bubbles
-function drawBubbles() {
-  bubbles.forEach(function(bubble, index, bubbles) {
-    drawCircle(bubble.x, bubble.y, bubble.radius, bubble.color);
-  });
-}
-
-// Redraws the screen each tick
-function draw() {
-  context.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawTime();
-  drawScore();
-  drawBubbles();
-
-  if (gameOver === true) {
-    context.font = '7vmin Helvetica';
-    context.fillStyle = '#000000';
-    const gameOverString = 'Game Over';
-    const gameOverStringWidth = context.measureText(gameOverString).width;
-    context.fillText(gameOverString, (canvas.width / 2) - (gameOverStringWidth / 2),
-                     150);
-    drawRectangle(backButton.x, backButton.y, backButton.width,
-                  backButton.height, backButton.text);
-    drawRectangle(restartButton.x, restartButton.y, restartButton.width,
-                  restartButton.height, restartButton.text);
-    let localHighScores = JSON.parse(localStorage.getItem(scoreKey));
-    drawHighScores(localHighScores);
-  }
-}
-
 // MISC
+
+// Preloads an image
+function preloadImage(file) {
+  let image = new Image();
+  image.onload = function() {
+    images[file] = image;
+  };
+  image.src = file;
+}
 
 // Checks if the current score is large enough to be a high score
 function checkForHighScore(highScores, localScore) {

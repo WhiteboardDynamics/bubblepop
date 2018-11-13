@@ -39,5 +39,7 @@ it to the Play Store.
 
 ## Helpful links
 
-[HTML Canvas Reference](https://www.w3schools.com/tags/ref_canvas.asp).
-[Javascript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference)
+* [HTML Canvas Reference](https://www.w3schools.com/tags/ref_canvas.asp)
+* [Javascript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference)
+* [Apache Cordova](https://cordova.apache.org/docs/en/latest/)
+* [Adobe Phonegap](http://docs.phonegap.com/)
